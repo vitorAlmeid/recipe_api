@@ -1,6 +1,8 @@
 'use strict';
 const recipePuppy = require('../integrations/recipePuppy');
-const validateQuery = query => {
+const giphy = require('../integrations/giphy');
+
+const validateQuery = function validateQuery(query) {
 
     if (!query.i) return { isValid: false, error: 'Invalid Query' };
 
@@ -15,20 +17,37 @@ const validateQuery = query => {
     return { isValid: true };
 };
 
-const getRecipes = async function (ingredients) {
+const getRecipesWithGifs = async function (ingredients) {
     return new Promise( async (resolve, reject) => {
-
+        const recipeList = [];
+        const keywords = ingredients.split(',').sort();
         const [error, recipes] = await to(recipePuppy.getRecipes(ingredients));
 
         if (error) {
             return reject(error);
         }
+        if (recipes.results.length === 0) {
+            return reject({ message: 'no recipes found' })
+        }
 
-        resolve(recipes);
+        for (const recipe of recipes.results) {
+            const [error, gifs] = await to(giphy.getGifs(recipe.title));
+            if (error) {
+                continue;
+            }
+            recipeList.push({
+                'title': recipe.title,
+                'ingredients' : recipe.ingredients,
+                'link' : recipe.href,
+                'gif' : gifs.data[0].url
+            });
+
+        };
+
+        resolve({ 'keywords': keywords, 'recipes': recipeList });
     });
 
 };
-
 
 module.exports = {
 
@@ -38,10 +57,10 @@ module.exports = {
 
         if (!validation.isValid) return res.status(400).json({ error: validation.error });
 
-        const recipes = await getRecipes(req.query.i.replace(' ', ''))
+        const recipes = await getRecipesWithGifs(req.query.i.replace(' ', ''))
 
         if (!recipes) return res.status(204).json({ error: 'Recipe puppy unavailable'  });
 
-        res.status(200).json({ data: recipes });
+        res.status(200).json( recipes );
     }
 }
