@@ -1,6 +1,7 @@
 'use strict';
 const recipePuppy = require('../integrations/recipePuppy');
 const giphy = require('../integrations/giphy');
+const Redis = require('../lib/redis');
 
 const validateQuery = function validateQuery(query) {
 
