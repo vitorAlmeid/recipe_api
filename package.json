@@ -12,12 +12,15 @@
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {
+    "eslint": "^7.13.0",
+    "eslint-plugin-import": "^2.22.1",
     "nodemon": "^2.0.6"
   },
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon --watch src src/index.js",
-    "debug": "nodemon --inspect src/index.js"
+    "debug": "nodemon --inspect src/index.js",
+    "lint-fix": "eslint --fix ."
   },
   "repository": {
     "type": "git",

@@ -1,9 +1,9 @@
 'use strict';
 
-// Constants
+//todo
+//adicionar para variavel de ambiente
 const PORT = 3000;
 
-// App
 const app = require('../config/express')();
 
 global.to = require('../src/lib/promiseWrapper').to;

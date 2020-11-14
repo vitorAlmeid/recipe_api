@@ -9,5 +9,5 @@ const getRecipes = async function getRecipes(ingredients) {
 };
 
 module.exports = {
-    getRecipes
-}
+    getRecipes,
+};

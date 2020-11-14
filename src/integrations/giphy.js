@@ -1,3 +1,5 @@
+'use strict';
+
 const Fetch = require('../lib/fetch').doFetch;
 const API_KEY = 'rcXN20npMs3UowQo9pe1QKGM9ctk51Ag';
 
@@ -9,5 +11,5 @@ const getGifs = async function getGifs(recipe) {
 };
 
 module.exports = {
-    getGifs
-}
+    getGifs,
+};

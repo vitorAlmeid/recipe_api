@@ -18,28 +18,30 @@ const validateQuery = function validateQuery(query) {
 };
 
 const getRecipesWithGifs = async function (ingredients) {
-    return new Promise( async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+        const searchRegExp = new RegExp(' ', 'g');
+        const trimmedIngredients = ingredients.replace(searchRegExp, '');
         const recipeList = [];
-        const keywords = ingredients.split(',').sort();
-        const [error, recipes] = await to(recipePuppy.getRecipes(ingredients));
+        const keywords = trimmedIngredients.split(',').sort();
+        const [error, recipes] = await to(recipePuppy.getRecipes(trimmedIngredients));
 
         if (error) {
             return reject(error);
         }
         if (recipes.results.length === 0) {
-            return reject({ message: 'no recipes found' })
+            return reject({ message: 'no recipes found' });
         }
 
         for (const recipe of recipes.results) {
-            const [error, gifs] = await to(giphy.getGifs(recipe.title));
-            if (error) {
+            const [err, gifs] = await to(giphy.getGifs(recipe.title));
+            if (err) {
                 continue;
             }
             recipeList.push({
                 'title': recipe.title,
                 'ingredients' : recipe.ingredients,
                 'link' : recipe.href,
-                'gif' : gifs.data[0].url
+                'gif' : gifs.data[0].url,
             });
 
         };
@@ -57,10 +59,10 @@ module.exports = {
 
         if (!validation.isValid) return res.status(400).json({ error: validation.error });
 
-        const recipes = await getRecipesWithGifs(req.query.i.replace(' ', ''))
+        const recipes = await getRecipesWithGifs(req.query.i);
 
         if (!recipes) return res.status(204).json({ error: 'Recipe puppy unavailable'  });
 
-        res.status(200).json( recipes );
-    }
-}
+        res.status(200).json(recipes);
+    },
+};
