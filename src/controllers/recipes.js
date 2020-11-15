@@ -19,22 +19,22 @@ const validateQuery = function validateQuery(query) {
 };
 
 const getRecipesWithGifs = async function (ingredients) {
+    const recipeList = [];
+    const keywords = ingredients.split(',').sort();
     return new Promise(async (resolve, reject) => {
-        const recipeList = [];
-        const keywords = ingredients.split(',').sort();
         const [error, recipes] = await to(recipePuppy.getRecipes(ingredients));
 
         if (error) {
-            return reject(error);
+            return reject({ 'keywords': keywords,'error': `[recipePuppy Unavailable] ${error.message}` });
         }
         if (recipes.results.length === 0) {
-            return reject({ message: 'no recipes found' });
+            return resolve({ 'keywords': keywords, 'recipes': 'no recipes found' });
         }
 
         for (const recipe of recipes.results) {
             const [err, gifs] = await to(giphy.getGifs(recipe.title));
             if (err) {
-                continue;
+                return reject({ 'keywords': keywords,'error': `[giphy Unavailable] ${err.message}` });
             }
             recipeList.push({
                 'title': recipe.title,
@@ -69,9 +69,10 @@ module.exports = {
             if (cachedResult) {
                 res.status(200).json(cachedResult);
             } else {
-                const recipes = await getRecipesWithGifs(trimmedIngredients);
-
-                if (!recipes) return res.status(204).json({ error: 'Recipe puppy unavailable'  });
+                const [recipesError, recipes] = await to(getRecipesWithGifs(trimmedIngredients));
+                if (recipesError) {
+                    return res.status(503).json(recipesError);
+                }
 
                 Redis.set(trimmedIngredients, recipes, 86400);
 
