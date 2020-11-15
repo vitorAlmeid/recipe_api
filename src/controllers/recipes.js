@@ -20,11 +20,9 @@ const validateQuery = function validateQuery(query) {
 
 const getRecipesWithGifs = async function (ingredients) {
     return new Promise(async (resolve, reject) => {
-        const searchRegExp = new RegExp(' ', 'g');
-        const trimmedIngredients = ingredients.replace(searchRegExp, '');
         const recipeList = [];
-        const keywords = trimmedIngredients.split(',').sort();
-        const [error, recipes] = await to(recipePuppy.getRecipes(trimmedIngredients));
+        const keywords = ingredients.split(',').sort();
+        const [error, recipes] = await to(recipePuppy.getRecipes(ingredients));
 
         if (error) {
             return reject(error);
@@ -57,13 +55,29 @@ module.exports = {
     async search(req, res) {
 
         const validation = validateQuery(req.query);
-
         if (!validation.isValid) return res.status(400).json({ error: validation.error });
 
-        const recipes = await getRecipesWithGifs(req.query.i);
+        const searchRegExp = new RegExp(' ', 'g');
 
-        if (!recipes) return res.status(204).json({ error: 'Recipe puppy unavailable'  });
+        const trimmedIngredients = req.query.i.replace(searchRegExp, '');
 
-        res.status(200).json(recipes);
+        Redis.get(trimmedIngredients, async (error, cachedResult) => {
+            if (error) {
+                console.error(error);
+            };
+
+            if (cachedResult) {
+                res.status(200).json(cachedResult);
+            } else {
+                const recipes = await getRecipesWithGifs(trimmedIngredients);
+
+                if (!recipes) return res.status(204).json({ error: 'Recipe puppy unavailable'  });
+
+                Redis.set(trimmedIngredients, recipes, 86400);
+
+                res.status(200).json(recipes);
+            }
+
+        });
     },
 };
