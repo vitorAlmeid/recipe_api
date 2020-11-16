@@ -19,7 +19,6 @@ const validateQuery = function validateQuery(query) {
 };
 
 const getRecipesWithGifs = async function (ingredients) {
-    const recipeList = [];
     const keywords = ingredients.split(',').sort();
     return new Promise(async (resolve, reject) => {
         const [error, recipes] = await to(recipePuppy.getRecipes(ingredients));
@@ -30,22 +29,27 @@ const getRecipesWithGifs = async function (ingredients) {
         if (recipes.results.length === 0) {
             return resolve({ 'keywords': keywords, 'recipes': 'no recipes found' });
         }
-
-        for (const recipe of recipes.results) {
-            const [err, gifs] = await to(giphy.getGifs(recipe.title));
-            if (err) {
-                return reject({ 'keywords': keywords,'error': `[giphy Unavailable] ${err.message}` });
-            }
-            recipeList.push({
-                'title': recipe.title,
-                'ingredients' : recipe.ingredients,
-                'link' : recipe.href,
-                'gif' : gifs.data[0].url,
+        const promises = recipes.results.map(async recipe => {
+            return new Promise(async (resolve, reject) => {
+                const [err, gifs] = await to(giphy.getGifs(recipe.title));
+                if (err) {
+                    return reject({ 'keywords': keywords,'error': `[giphy Unavailable] ${err.message}` });
+                }
+                resolve({
+                    'title': recipe.title,
+                    'ingredients' : recipe.ingredients,
+                    'link' : recipe.href,
+                    'gif' : gifs.data[0].url,
+                });
             });
+        });
+        try {
+            const recipesList = await Promise.all(promises);
+            resolve({ 'keywords': keywords, 'recipes': recipesList });
+        } catch (e) {
+            reject(e);
+        }
 
-        };
-
-        resolve({ 'keywords': keywords, 'recipes': recipeList });
     });
 
 };
