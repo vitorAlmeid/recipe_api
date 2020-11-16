@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  recipe_api:
+    container_name: recipe_api
+    command: npm start
+    restart: always
+    environment:
+      - NODE_ENV=dev
+      - PORT=3030
+    build:
+      context: .
+    depends_on:
+      - redis
+    ports:
+      - "3030:3030"
+    volumes:
+      - .:/install/:rw
+      - /node_modules # hack to exclude node_modules from mapping
+    networks:
+      - app-connect
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-connect
+
+networks:
+  app-connect:
+    driver: bridge
