@@ -15,7 +15,7 @@ GET `/recipes/?i={ingredient_1},{ingredient_2}`
 e.g: http://127.0.0.1/recipes?i=rice,shrimp
 
 Response structure:
-`{
+```{
     "keywords": ["rice","shrimp"],
     "recipes": [
         {
@@ -34,7 +34,7 @@ Response structure:
     "error": {
         "error": false
     }
-}`
+}```
 
 
 
