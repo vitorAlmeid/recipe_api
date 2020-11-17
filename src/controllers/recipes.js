@@ -2,6 +2,7 @@
 const recipePuppy = require('../integrations/recipePuppy');
 const giphy = require('../integrations/giphy');
 const Redis = require('../lib/redis');
+const Utils = require('../lib/utils');
 
 const validateQuery = function validateQuery(query) {
 
@@ -37,7 +38,7 @@ const getRecipesWithGifs = async function (ingredients) {
                 }
                 resolve({
                     'title': recipe.title,
-                    'ingredients' : recipe.ingredients,
+                    'ingredients' : Utils.trimAll(recipe.ingredients).split(','),
                     'link' : recipe.href,
                     'gif' : gifs.data[0].url,
                 });
@@ -61,9 +62,7 @@ module.exports = {
         const validation = validateQuery(req.query);
         if (!validation.isValid) return res.status(400).json({ error: validation.error });
 
-        const searchRegExp = new RegExp(' ', 'g');
-
-        const trimmedIngredients = req.query.i.replace(searchRegExp, '');
+        const trimmedIngredients = Utils.trimAll(req.query.i);
 
         Redis.get(trimmedIngredients, async (error, cachedResult) => {
             if (error) {
