@@ -7,13 +7,13 @@ services:
     restart: always
     environment:
       - NODE_ENV=dev
-      - PORT=3030
+      - PORT=80
     build:
       context: .
     depends_on:
       - redis
     ports:
-      - "3030:3030"
+      - "80:80"
     networks:
       - app-connect
 
