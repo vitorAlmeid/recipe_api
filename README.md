@@ -9,13 +9,15 @@ API para entregar receitas com gifs.
 
 3 - Execute docker-compose up --build -d no root do projeto 
 
-Public routes
+Rotas públicas:
+
 GET `/recipes/?i={ingredient_1},{ingredient_2}`
 
-e.g: http://127.0.0.1/recipes?i=rice,shrimp
+e.g: `http://127.0.0.1/recipes?i=rice,shrimp`
 
 Response structure:
-```{
+```json
+{
     "keywords": ["rice","shrimp"],
     "recipes": [
         {
@@ -34,7 +36,8 @@ Response structure:
     "error": {
         "error": false
     }
-}```
+}
+```
 
 
 
