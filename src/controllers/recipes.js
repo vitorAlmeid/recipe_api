@@ -25,16 +25,16 @@ const getRecipesWithGifs = async function (ingredients) {
         const [error, recipes] = await to(recipePuppy.getRecipes(ingredients));
 
         if (error) {
-            return reject({ 'keywords': keywords,'error': `[recipePuppy Unavailable] ${error.message}` });
+            return reject({ 'keywords': keywords, 'recipes': [], 'error': { 'error': true, 'message': error.message } });
         }
         if (recipes.results.length === 0) {
-            return resolve({ 'keywords': keywords, 'recipes': 'no recipes found' });
+            return resolve({ 'keywords': keywords, 'recipes': [], 'error': { 'error': false } });
         }
         const promises = recipes.results.map(async recipe => {
             return new Promise(async (resolve, reject) => {
                 const [err, gifs] = await to(giphy.getGifs(recipe.title));
                 if (err) {
-                    return reject({ 'keywords': keywords,'error': `[giphy Unavailable] ${err.message}` });
+                    return reject({ 'keywords': keywords, 'recipes': [], 'error': { 'error': true, 'message': err.message } });
                 }
                 resolve({
                     'title': recipe.title,
@@ -46,7 +46,7 @@ const getRecipesWithGifs = async function (ingredients) {
         });
         try {
             const recipesList = await Promise.all(promises);
-            resolve({ 'keywords': keywords, 'recipes': recipesList });
+            resolve({ 'keywords': keywords, 'recipes': recipesList, 'error': { 'error': false } });
         } catch (e) {
             reject(e);
         }
