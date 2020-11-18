@@ -1,7 +1,7 @@
 'use strict';
 
 const fetch = require('node-fetch');
-const CustomError = require('../lib/customError').CustomError;
+const CustomError = require('../lib/customError');
 
 const doFetch = function doFetch(method, path, auth, opts = {}) {
     return new Promise((resolve, reject) => {
